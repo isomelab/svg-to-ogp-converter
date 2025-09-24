@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG to OGP PNG Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 90%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f2ff;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .upload-text {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .progress-container {
+            display: none;
+            margin: 30px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .batch-actions {
+            display: none;
+            margin: 30px 0;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 15px;
+        }
+
+        .batch-download-btn {
+            background: white;
+            color: #28a745;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 10px;
+        }
+
+        .batch-download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .batch-info {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .results-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 0;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .clear-btn:hover {
+            background: #c82333;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .result-success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .result-error {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
+        }
+        
+        .download-btn:hover {
+            background: #1e7e34;
+        }
+        
+        .specs {
+            background: #f0f2ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .specs h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .specs ul {
+            color: #666;
+            margin-left: 20px;
+        }
+        
+        .specs li {
+            margin: 5px 0;
+        }
+
+        .limitations {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .limitations h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .limitations ul {
+            color: #856404;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 SVG to OGP</h1>
+        <p class="subtitle">SVGファイルを1200×630のOGP画像に一括変換</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">SVGファイルをここにドラッグ&ドロップ</div>
+            <input type="file" id="fileInput" accept=".svg" multiple style="display: none;">
+            <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                ファイルを選択
+            </button>
+        </div>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">変換中... 0/0</div>
+        </div>
+
+        <div class="batch-actions" id="batchActions">
+            <div class="batch-info">
+                <span id="successCount">0</span>個のファイルが変換完了しました
+            </div>
+            <button class="batch-download-btn" onclick="downloadAllAsZip()">
+                📦 ZIP一括ダウンロード
+            </button>
+            <button class="batch-download-btn" onclick="downloadAllIndividually()">
+                📁 個別一括ダウンロード
+            </button>
+        </div>
+        
+        <div class="results" id="resultsContainer" style="display: none;">
+            <div class="results-header">
+                <h3 class="results-title">変換結果</h3>
+                <button class="clear-btn" onclick="clearResults()">クリア</button>
+            </div>
+            <div id="results"></div>
+        </div>
+        
+        <div class="specs">
+            <h3>📋 変換仕様</h3>
+            <ul>
+                <li><strong>出力サイズ:</strong> 1200px × 630px (OGP標準)</li>
+                <li><strong>縦長素材:</strong> 高さ600px基準で比率維持</li>
+                <li><strong>横長素材:</strong> 幅600px基準で比率維持</li>
+                <li><strong>配置:</strong> 完全中央配置</li>
+                <li><strong>背景:</strong> 白色</li>
+            </ul>
+        </div>
+
+        <div class="limitations">
+            <h4>⚠️ 処理能力の目安</h4>
+            <ul>
+                <li><strong>快適動作:</strong> 50-100個まで</li>
+                <li><strong>重いが可能:</strong> 200-300個まで</li>
+                <li><strong>400個:</strong> PCスペック次第（推奨：Chrome、16GB以上メモリ）</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- JSZip ライブラリを読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const batchActions = document.getElementById('batchActions');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const results = document.getElementById('results');
+        const successCount = document.getElementById('successCount');
+
+        let convertedFiles = []; // 変換済みファイルを保存
+
+        // ドラッグ&ドロップイベント
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.name.toLowerCase().endsWith('.svg'));
+            if (files.length > 0) {
+                processFiles(files);
+            } else {
+                alert('SVGファイルを選択してください');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                processFiles(files);
+            }
+        });
+
+        async function processFiles(files) {
+            if (files.length > 500) {
+                if (!confirm(`${files.length}個のファイルを処理します。大量のファイルはブラウザが重くなる可能性があります。続行しますか？`)) {
+                    return;
+                }
+            }
+
+            progressContainer.style.display = 'block';
+            batchActions.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            
+            let successfulConversions = 0;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const progressPercent = ((i + 1) / files.length) * 100;
+                progressFill.style.width = progressPercent + '%';
+                progressText.textContent = `変換中... ${i + 1}/${files.length}`;
+                
+                try {
+                    const convertedBlob = await convertSvgToPng(file);
+                    const url = URL.createObjectURL(convertedBlob);
+                    const filename = 'ogp_' + file.name.replace('.svg', '.png');
+                    
+                    // 変換済みファイルリストに追加
+                    convertedFiles.push({
+                        filename: filename,
+                        blob: convertedBlob,
+                        url: url
+                    });
+                    
+                    addResult(filename, url, true);
+                    successfulConversions++;
+                } catch (error) {
+                    console.error('変換エラー:', error);
+                    addResult(file.name, null, false, error.message);
+                }
+            }
+            
+            progressContainer.style.display = 'none';
+            
+            if (successfulConversions > 0) {
+                batchActions.style.display = 'block';
+                successCount.textContent = successfulConversions;
+            }
+        }
+
+        async function convertSvgToPng(svgFile) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const svgText = e.target.result;
+                        
+                        // SVGをImageに変換してサイズを取得
+                        const tempImg = new Image();
+                        tempImg.onload = () => {
+                            const originalWidth = tempImg.naturalWidth;
+                            const originalHeight = tempImg.naturalHeight;
+                            
+                            // 縦長か横長かを判断
+                            const isVertical = originalHeight > originalWidth;
+                            
+                            // リサイズ計算
+                            let targetWidth, targetHeight;
+                            if (isVertical) {
+                                // 縦長：高さ600px基準
+                                targetHeight = 600;
+                                targetWidth = (originalWidth / originalHeight) * 600;
+                            } else {
+                                // 横長：幅600px基準
+                                targetWidth = 600;
+                                targetHeight = (originalHeight / originalWidth) * 600;
+                            }
+                            
+                            // キャンバス作成
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 1200;
+                            canvas.height = 630;
+                            const ctx = canvas.getContext('2d');
+                            
+                            // 白背景
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(0, 0, 1200, 630);
+                            
+                            // 中央配置の計算
+                            const x = (1200 - targetWidth) / 2;
+                            const y = (630 - targetHeight) / 2;
+                            
+                            // 画像を描画
+                            ctx.drawImage(tempImg, x, y, targetWidth, targetHeight);
+                            
+                            // PNGとして出力
+                            canvas.toBlob(resolve, 'image/png');
+                        };
+                        
+                        tempImg.onerror = () => reject(new Error('SVG読み込みエラー'));
+                        tempImg.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgText)));
+                        
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('ファイル読み込みエラー'));
+                reader.readAsText(svgFile);
+            });
+        }
+
+        // ZIP一括ダウンロード
+        async function downloadAllAsZip() {
+            if (convertedFiles.length === 0) {
+                alert('ダウンロード可能なファイルがありません');
+                return;
+            }
+
+            const zip = new JSZip();
+            
+            // 進行状況を表示
+            progressContainer.style.display = 'block';
+            progressText.textContent = 'ZIP作成中...';
+            
+            try {
+                for (let i = 0; i < convertedFiles.length; i++) {
+                    const file = convertedFiles[i];
+                    zip.file(file.filename, file.blob);
+                    
+                    const progressPercent = ((i + 1) / convertedFiles.length) * 100;
+                    progressFill.style.width = progressPercent + '%';
+                }
+                
+                const zipBlob = await zip.generateAsync({type: "blob"});
+                const url = URL.createObjectURL(zipBlob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ogp-images-${new Date().getTime()}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                alert('ZIP作成中にエラーが発生しました: ' + error.message);
+            }
+            
+            progressContainer.style.display = 'none';
+        }
+
+        // 個別一括ダウンロード
+        function downloadAllIndividually() {
+            if (convertedFiles.length === 0) {
+                alert('ダウンロード可能なファイルがありません');
+                return;
+            }
+
+            convertedFiles.forEach((file, index) => {
+                setTimeout(() => {
+                    const a = document.createElement('a');
+                    a.href = file.url;
+                    a.download = file.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }, index * 100); // 100ms間隔でダウンロード
+            });
+        }
+
+        function addResult(filename, url, success, error = '') {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result-item ${success ? 'result-success' : 'result-error'}`;
+            
+            const status = success ? '✅' : '❌';
+            const message = success ? '変換完了' : `エラー: ${error}`;
+            
+            resultDiv.innerHTML = `
+                <span>${status} ${filename} - ${message}</span>
+                ${success ? `<a href="${url}" download="${filename}" class="download-btn">ダウンロード</a>` : ''}
+            `;
+            
+            results.appendChild(resultDiv);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearResults() {
+            results.innerHTML = '';
+            convertedFiles = [];
+            batchActions.style.display = 'none';
+            resultsContainer.style.display = 'none';
+            
+            // URLオブジェクトをクリーンアップ
+            convertedFiles.forEach(file => {
+                if (file.url) {
+                    URL.revokeObjectURL(file.url);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
